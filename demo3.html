@@ -296,10 +296,9 @@ demo.addScene("b5m2turnright",function(){
             //spring4.applyForce();
         });
     });
- demo.addScene("box5motor10",function(){
+ demo.addScene("box2motor5right",function(){
 
-        // Create world
-        var world = demo.getWorld();
+       var world = demo.getWorld();
         world.gravity.set(0,0,-10);
         world.broadphase = new CANNON.NaiveBroadphase();
 
@@ -307,35 +306,35 @@ demo.addScene("b5m2turnright",function(){
         var sphereShape = new CANNON.Sphere(0.1),
             sphereBody = new CANNON.Body({ mass: 0 });
         sphereBody.addShape(sphereShape);
-        world.addBody(sphereBody);
-        demo.addVisual(sphereBody);
+        //world.addBody(sphereBody);
+        //demo.addVisual(sphereBody);
         sphereBody.position.set(size,-size,0);
        
         var sphereShape2 = new CANNON.Sphere(0.1),
         sphereBody2 = new CANNON.Body({ mass: 0 });
         sphereBody2.addShape(sphereShape2);
-        world.addBody(sphereBody2);
-        demo.addVisual(sphereBody2);
+        //world.addBody(sphereBody2);
+        //demo.addVisual(sphereBody2);
         sphereBody2.position.set(size,size,0);
         
         var sphereShape3 = new CANNON.Sphere(0.1),
         sphereBody3 = new CANNON.Body({ mass: 0 });
         sphereBody3.addShape(sphereShape3);
-        world.addBody(sphereBody3);
-        demo.addVisual(sphereBody3);
+        //world.addBody(sphereBody3);
+        //demo.addVisual(sphereBody3);
         sphereBody3.position.set(-size,-size,0);
         
         var sphereShape4 = new CANNON.Sphere(0.1),
         sphereBody4 = new CANNON.Body({ mass: 0 });
         sphereBody4.addShape(sphereShape4);
-        world.addBody(sphereBody4);
-        demo.addVisual(sphereBody4);
+        //world.addBody(sphereBody4);
+        //demo.addVisual(sphereBody4);
         sphereBody4.position.set(-size,size,0);
         
         // Create a box body
         var halfExtents = new CANNON.Vec3(size,size,size*0.3),
             boxShape = new CANNON.Box(halfExtents);
-            boxBody = new CANNON.Body({ mass: 5 });
+            boxBody = new CANNON.Body({ mass: 2 });
                     
         boxBody.addShape(boxShape);
         boxBody.position.set(0,0,-size);
@@ -344,18 +343,21 @@ demo.addScene("b5m2turnright",function(){
 
         //boxBody.addShape(cylinderShape, new CANNON.Vec3(size,size,size*0.5));
         var motor1 = new CANNON.Body({
-                  mass: 2.5,
+                  mass: 1.25,
                   shape: cylinderShape,
                   position: new CANNON.Vec3(size,size,-size*0.5)
                 });
         world.addBody(motor1);
         demo.addVisual(motor1);
+        motor1.torque=new CANNON.Vec3(0,0,size*2);
         var c = new CANNON.LockConstraint(motor1, boxBody);
         world.addConstraint(c);
         
+    
+
         //boxBody.addShape(cylinderShape, new CANNON.Vec3(size,-size,size*0.5));
         var motor2 = new CANNON.Body({
-              mass: 2.5,
+              mass: 1.25,
               shape: cylinderShape,
               position: new CANNON.Vec3(size,-size,-size*0.5)
         });
@@ -367,7 +369,7 @@ demo.addScene("b5m2turnright",function(){
         //boxBody.addShape(cylinderShape, new CANNON.Vec3(-size,size,size*0.5));
         //boxBody.addShape(cylinderShape, new CANNON.Vec3(-size,-size,size*0.5));
         var motor3 = new CANNON.Body({
-              mass: 2.5,
+              mass: 1.25,
               shape: cylinderShape,
               position: new CANNON.Vec3(-size,size,-size*0.5)
         });
@@ -378,7 +380,7 @@ demo.addScene("b5m2turnright",function(){
         world.addBody(boxBody);
         demo.addVisual(boxBody);
         var motor4 = new CANNON.Body({
-              mass: 2.5,
+              mass: 1.25,
               shape: cylinderShape,
               position: new CANNON.Vec3(-size,-size,-size*0.5)
         });
@@ -417,10 +419,155 @@ demo.addScene("b5m2turnright",function(){
         });
         // Compute the force after each step
         world.addEventListener("postStep",function(event){
-            spring.applyForce();
-            spring2.applyForce();
-            spring3.applyForce();
-            spring4.applyForce();
+            //spring.applyForce();
+            motor1.force=new CANNON.Vec3(0,0,17.5);
+            motor2.force=new CANNON.Vec3(0,0,17.5);
+            motor3.force=new CANNON.Vec3(0,0,17.5);
+            motor4.force=new CANNON.Vec3(0,0,17.5);
+            motor1.torque=new CANNON.Vec3(0,0,-2.5);
+            motor2.torque=new CANNON.Vec3(0,0,-2.5);
+            motor3.torque=new CANNON.Vec3(0,0,-2.5);
+            motor4.torque=new CANNON.Vec3(0,0,-2.5);
+            //spring2.applyForce();
+            //spring3.applyForce();
+            //spring4.applyForce();
+        });
+    });
+	demo.addScene("box2motor5left",function(){
+
+       var world = demo.getWorld();
+        world.gravity.set(0,0,-10);
+        world.broadphase = new CANNON.NaiveBroadphase();
+
+        // Create a static sphere
+        var sphereShape = new CANNON.Sphere(0.1),
+            sphereBody = new CANNON.Body({ mass: 0 });
+        sphereBody.addShape(sphereShape);
+        //world.addBody(sphereBody);
+        //demo.addVisual(sphereBody);
+        sphereBody.position.set(size,-size,0);
+       
+        var sphereShape2 = new CANNON.Sphere(0.1),
+        sphereBody2 = new CANNON.Body({ mass: 0 });
+        sphereBody2.addShape(sphereShape2);
+        //world.addBody(sphereBody2);
+        //demo.addVisual(sphereBody2);
+        sphereBody2.position.set(size,size,0);
+        
+        var sphereShape3 = new CANNON.Sphere(0.1),
+        sphereBody3 = new CANNON.Body({ mass: 0 });
+        sphereBody3.addShape(sphereShape3);
+        //world.addBody(sphereBody3);
+        //demo.addVisual(sphereBody3);
+        sphereBody3.position.set(-size,-size,0);
+        
+        var sphereShape4 = new CANNON.Sphere(0.1),
+        sphereBody4 = new CANNON.Body({ mass: 0 });
+        sphereBody4.addShape(sphereShape4);
+        //world.addBody(sphereBody4);
+        //demo.addVisual(sphereBody4);
+        sphereBody4.position.set(-size,size,0);
+        
+        // Create a box body
+        var halfExtents = new CANNON.Vec3(size,size,size*0.3),
+            boxShape = new CANNON.Box(halfExtents);
+            boxBody = new CANNON.Body({ mass: 2 });
+                    
+        boxBody.addShape(boxShape);
+        boxBody.position.set(0,0,-size);
+
+        var cylinderShape = new CANNON.Cylinder(size*0.6,size*0.6,size*0.2,20);
+
+        //boxBody.addShape(cylinderShape, new CANNON.Vec3(size,size,size*0.5));
+        var motor1 = new CANNON.Body({
+                  mass: 1.25,
+                  shape: cylinderShape,
+                  position: new CANNON.Vec3(size,size,-size*0.5)
+                });
+        world.addBody(motor1);
+        demo.addVisual(motor1);
+        motor1.torque=new CANNON.Vec3(0,0,size*2);
+        var c = new CANNON.LockConstraint(motor1, boxBody);
+        world.addConstraint(c);
+        
+    
+
+        //boxBody.addShape(cylinderShape, new CANNON.Vec3(size,-size,size*0.5));
+        var motor2 = new CANNON.Body({
+              mass: 1.25,
+              shape: cylinderShape,
+              position: new CANNON.Vec3(size,-size,-size*0.5)
+        });
+        world.addBody(motor2);
+        demo.addVisual(motor2);
+        var c = new CANNON.LockConstraint(motor2, boxBody);
+        world.addConstraint(c);
+
+        //boxBody.addShape(cylinderShape, new CANNON.Vec3(-size,size,size*0.5));
+        //boxBody.addShape(cylinderShape, new CANNON.Vec3(-size,-size,size*0.5));
+        var motor3 = new CANNON.Body({
+              mass: 1.25,
+              shape: cylinderShape,
+              position: new CANNON.Vec3(-size,size,-size*0.5)
+        });
+        world.addBody(motor3);
+        demo.addVisual(motor3);
+        var c = new CANNON.LockConstraint(motor3, boxBody);
+        world.addConstraint(c);
+        world.addBody(boxBody);
+        demo.addVisual(boxBody);
+        var motor4 = new CANNON.Body({
+              mass: 1.25,
+              shape: cylinderShape,
+              position: new CANNON.Vec3(-size,-size,-size*0.5)
+        });
+        world.addBody(motor4);
+        demo.addVisual(motor4);
+        var c = new CANNON.LockConstraint(motor4, boxBody);
+        world.addConstraint(c);
+
+        var spring = new CANNON.Spring(boxBody,sphereBody,{
+            localAnchorA: new CANNON.Vec3(size,-size,0),
+            localAnchorB: new CANNON.Vec3(0,0,0),
+            restLength : 2,
+            stiffness : 50,
+            damping : 1,
+        });
+        var spring2 = new CANNON.Spring(boxBody,sphereBody2,{
+            localAnchorA: new CANNON.Vec3(size,size,0),
+            localAnchorB: new CANNON.Vec3(0,0,0),
+            restLength : 2,
+            stiffness : 50,
+            damping : 1,
+        });
+        var spring3 = new CANNON.Spring(boxBody,sphereBody3,{
+            localAnchorA: new CANNON.Vec3(-size,-size,0),
+            localAnchorB: new CANNON.Vec3(0,0,0),
+            restLength : 2,
+            stiffness : 50,
+            damping : 1,
+        });
+        var spring4 = new CANNON.Spring(boxBody,sphereBody4,{
+            localAnchorA: new CANNON.Vec3(-size,size,0),
+            localAnchorB: new CANNON.Vec3(0,0,0),
+            restLength : 2,
+            stiffness : 50,
+            damping : 1,
+        });
+        // Compute the force after each step
+        world.addEventListener("postStep",function(event){
+            //spring.applyForce();
+            motor1.force=new CANNON.Vec3(0,0,17.5);
+            motor2.force=new CANNON.Vec3(0,0,17.5);
+            motor3.force=new CANNON.Vec3(0,0,17.5);
+            motor4.force=new CANNON.Vec3(0,0,17.5);
+            motor1.torque=new CANNON.Vec3(0,0,2.5);
+            motor2.torque=new CANNON.Vec3(0,0,2.5);
+            motor3.torque=new CANNON.Vec3(0,0,2.5);
+            motor4.torque=new CANNON.Vec3(0,0,2.5);
+            //spring2.applyForce();
+            //spring3.applyForce();
+            //spring4.applyForce();
         });
     });
     demo.start();
