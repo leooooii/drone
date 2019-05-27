@@ -26,7 +26,15 @@
         var world = demo.getWorld();
         world.gravity.set(0,0,-10);
         world.broadphase = new CANNON.NaiveBroadphase();
-
+        
+		var groundMaterial = new CANNON.Material("groundMaterial");
+        var groundShape = new CANNON.Plane();
+		var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
+		ground.addShape(groundShape);
+		ground.position.z = -3;
+		world.add(ground);
+		demo.addVisual(ground);
+		
         // Create a static sphere
         var sphereShape = new CANNON.Sphere(0.1),
             sphereBody = new CANNON.Body({ mass: 0 });
@@ -164,7 +172,13 @@ demo.addScene("b5m2turnright",function(){
         var world = demo.getWorld();
         world.gravity.set(0,0,-10);
         world.broadphase = new CANNON.NaiveBroadphase();
-
+        var groundMaterial = new CANNON.Material("groundMaterial");
+        var groundShape = new CANNON.Plane();
+		var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
+		ground.addShape(groundShape);
+		ground.position.z = -3;
+		world.add(ground);
+		demo.addVisual(ground);
         // Create a static sphere
         var sphereShape = new CANNON.Sphere(0.1),
             sphereBody = new CANNON.Body({ mass: 0 });
@@ -301,7 +315,13 @@ demo.addScene("b5m2turnright",function(){
        var world = demo.getWorld();
         world.gravity.set(0,0,-10);
         world.broadphase = new CANNON.NaiveBroadphase();
-
+	    var groundMaterial = new CANNON.Material("groundMaterial");
+        var groundShape = new CANNON.Plane();
+		var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
+		ground.addShape(groundShape);
+		ground.position.z = -3;
+		world.add(ground);
+		demo.addVisual(ground);
         // Create a static sphere
         var sphereShape = new CANNON.Sphere(0.1),
             sphereBody = new CANNON.Body({ mass: 0 });
@@ -438,7 +458,13 @@ demo.addScene("b5m2turnright",function(){
        var world = demo.getWorld();
         world.gravity.set(0,0,-10);
         world.broadphase = new CANNON.NaiveBroadphase();
-
+	    var groundMaterial = new CANNON.Material("groundMaterial");
+        var groundShape = new CANNON.Plane();
+		var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
+		ground.addShape(groundShape);
+		ground.position.z = -3;
+		world.add(ground);
+		demo.addVisual(ground);
         // Create a static sphere
         var sphereShape = new CANNON.Sphere(0.1),
             sphereBody = new CANNON.Body({ mass: 0 });
