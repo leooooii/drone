@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>cannon.js - spring demo</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="css/style.css" type="text/css"/>
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  </head>
+  <body>
+    <script src="build/cannon.js"></script>
+    <script src="build/cannon.demo.js"></script>
+    <script src="libs/dat.gui.js"></script>
+    <script src="libs/Three.js"></script>
+    <script src="libs/TrackballControls.js"></script>
+    <script src="libs/Detector.js"></script>
+    <script src="libs/Stats.js"></script>
+    <script src="libs/smoothie.js"></script>
+    <script>
+
+    var demo = new CANNON.Demo();
+    var size = 1;
+    var f=0;
+ demo.addScene("b5m2turnleft",function(){
+
+        // Create world
+        var world = demo.getWorld();
+        world.gravity.set(0,0,-10);
+        world.broadphase = new CANNON.NaiveBroadphase();
+        
+        var groundMaterial = new CANNON.Material("groundMaterial");
+        var groundShape = new CANNON.Plane();
+        var ground = new CANNON.Body({ mass: 0, material: groundMaterial });
+        ground.addShape(groundShape);
+        ground.position.z = -3;
+        world.add(ground);
+        demo.addVisual(ground);
+        
+        
+        // Create a box body
+        var halfExtents = new CANNON.Vec3(size,size,size*0.3),
+            boxShape = new CANNON.Box(halfExtents);
+            boxBody = new CANNON.Body({ mass: 5 });
+                    
+        boxBody.addShape(boxShape);
+        boxBody.position.set(0,0,-size);
+
+        var cylinderShape = new CANNON.Cylinder(size*0.6,size*0.6,size*0.2,20);
+
+        //boxBody.addShape(cylinderShape, new CANNON.Vec3(size,size,size*0.5));
+        var motor1 = new CANNON.Body({
+                  mass: 0.5,
+                  shape: cylinderShape,
+                  position: new CANNON.Vec3(size,size,-size*0.5)
+                });
+        world.addBody(motor1);
+        demo.addVisual(motor1);
+        motor1.torque=new CANNON.Vec3(0,0,size*2);
+        var c = new CANNON.LockConstraint(motor1, boxBody);
+        world.addConstraint(c);
+        
+    
+
+        //boxBody.addShape(cylinderShape, new CANNON.Vec3(size,-size,size*0.5));
+        var motor2 = new CANNON.Body({
+              mass: 0.5,
+              shape: cylinderShape,
+              position: new CANNON.Vec3(size,-size,-size*0.5)
+        });
+        world.addBody(motor2);
+        demo.addVisual(motor2);
+        var c = new CANNON.LockConstraint(motor2, boxBody);
+        world.addConstraint(c);
+
+        //boxBody.addShape(cylinderShape, new CANNON.Vec3(-size,size,size*0.5));
+        //boxBody.addShape(cylinderShape, new CANNON.Vec3(-size,-size,size*0.5));
+        var motor3 = new CANNON.Body({
+              mass: 0.5,
+              shape: cylinderShape,
+              position: new CANNON.Vec3(-size,size,-size*0.5)
+        });
+        world.addBody(motor3);
+        demo.addVisual(motor3);
+        var c = new CANNON.LockConstraint(motor3, boxBody);
+        world.addConstraint(c);
+        world.addBody(boxBody);
+        demo.addVisual(boxBody);
+        var motor4 = new CANNON.Body({
+              mass: 0.5,
+              shape: cylinderShape,
+              position: new CANNON.Vec3(-size,-size,-size*0.5)
+        });
+        world.addBody(motor4);
+        demo.addVisual(motor4);
+        var c = new CANNON.LockConstraint(motor4, boxBody);
+        world.addConstraint(c);
+        console.log(f);
+   
+        // Compute the force after each step
+        world.addEventListener("postStep",function(event){
+            //spring.applyForce();
+            motor1.force=new CANNON.Vec3(0,0,17.5);
+            motor2.force=new CANNON.Vec3(0,0,17.5);
+            motor3.force=new CANNON.Vec3(0,0,17.5);
+            motor4.force=new CANNON.Vec3(0,0,17.5);
+
+            motor1.torque=new CANNON.Vec3(0,0,-2.5);
+            motor2.torque=new CANNON.Vec3(0,0,5);
+            motor3.torque=new CANNON.Vec3(0,0,5);
+            motor4.torque=new CANNON.Vec3(0,0,-2.5);
+            motor4.linearDamping=0.5;
+            motor3.linearDamping=0.5;
+            motor2.linearDamping=0.5;
+            motor1.linearDamping=0.5;
+            motor4.angularDamping=0.5;
+            motor3.angularDamping=0.5;
+            motor2.angularDamping=0.5;
+            motor1.angularDamping=0.5;
+            f=boxBody.force();
+
+        });
+    });
+
+    demo.start();
+
+    </script>
+  </body>
+</html>

@@ -35,34 +35,6 @@
 		world.add(ground);
 		demo.addVisual(ground);
 		
-        // Create a static sphere
-        var sphereShape = new CANNON.Sphere(0.1),
-            sphereBody = new CANNON.Body({ mass: 0 });
-        sphereBody.addShape(sphereShape);
-        //world.addBody(sphereBody);
-        //demo.addVisual(sphereBody);
-        sphereBody.position.set(size,-size,0);
-	   
-	    var sphereShape2 = new CANNON.Sphere(0.1),
-        sphereBody2 = new CANNON.Body({ mass: 0 });
-        sphereBody2.addShape(sphereShape2);
-        //world.addBody(sphereBody2);
-        //demo.addVisual(sphereBody2);
-        sphereBody2.position.set(size,size,0);
-		
-	    var sphereShape3 = new CANNON.Sphere(0.1),
-        sphereBody3 = new CANNON.Body({ mass: 0 });
-        sphereBody3.addShape(sphereShape3);
-        //world.addBody(sphereBody3);
-        //demo.addVisual(sphereBody3);
-        sphereBody3.position.set(-size,-size,0);
-		
-		var sphereShape4 = new CANNON.Sphere(0.1),
-        sphereBody4 = new CANNON.Body({ mass: 0 });
-        sphereBody4.addShape(sphereShape4);
-        //world.addBody(sphereBody4);
-        //demo.addVisual(sphereBody4);
-        sphereBody4.position.set(-size,size,0);
 		
         // Create a box body
         var halfExtents = new CANNON.Vec3(size,size,size*0.3),
@@ -122,34 +94,7 @@
         var c = new CANNON.LockConstraint(motor4, boxBody);
         world.addConstraint(c);
 
-        var spring = new CANNON.Spring(boxBody,sphereBody,{
-            localAnchorA: new CANNON.Vec3(size,-size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
-        var spring2 = new CANNON.Spring(boxBody,sphereBody2,{
-            localAnchorA: new CANNON.Vec3(size,size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
-		var spring3 = new CANNON.Spring(boxBody,sphereBody3,{
-            localAnchorA: new CANNON.Vec3(-size,-size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
-		var spring4 = new CANNON.Spring(boxBody,sphereBody4,{
-            localAnchorA: new CANNON.Vec3(-size,size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
+   
         // Compute the force after each step
         world.addEventListener("postStep",function(event){
             //spring.applyForce();
@@ -157,13 +102,20 @@
             motor2.force=new CANNON.Vec3(0,0,17.5);
             motor3.force=new CANNON.Vec3(0,0,17.5);
             motor4.force=new CANNON.Vec3(0,0,17.5);
+
             motor1.torque=new CANNON.Vec3(0,0,2.5);
             motor2.torque=new CANNON.Vec3(0,0,2.5);
             motor3.torque=new CANNON.Vec3(0,0,2.5);
             motor4.torque=new CANNON.Vec3(0,0,2.5);
-			//spring2.applyForce();
-			//spring3.applyForce();
-			//spring4.applyForce();
+            motor4.linearDamping=0.5;
+            motor3.linearDamping=0.5;
+            motor2.linearDamping=0.5;
+            motor1.linearDamping=0.5;
+            motor4.angularDamping=0.5;
+            motor3.angularDamping=0.5;
+            motor2.angularDamping=0.5;
+            motor1.angularDamping=0.5;
+
         });
     });
 demo.addScene("b5m2turnright",function(){
@@ -180,33 +132,6 @@ demo.addScene("b5m2turnright",function(){
 		world.add(ground);
 		demo.addVisual(ground);
         // Create a static sphere
-        var sphereShape = new CANNON.Sphere(0.1),
-            sphereBody = new CANNON.Body({ mass: 0 });
-        sphereBody.addShape(sphereShape);
-        //world.addBody(sphereBody);
-        //demo.addVisual(sphereBody);
-        sphereBody.position.set(size,-size,0);
-       
-        var sphereShape2 = new CANNON.Sphere(0.1),
-        sphereBody2 = new CANNON.Body({ mass: 0 });
-        sphereBody2.addShape(sphereShape2);
-        //world.addBody(sphereBody2);
-        //demo.addVisual(sphereBody2);
-        sphereBody2.position.set(size,size,0);
-        
-        var sphereShape3 = new CANNON.Sphere(0.1),
-        sphereBody3 = new CANNON.Body({ mass: 0 });
-        sphereBody3.addShape(sphereShape3);
-        //world.addBody(sphereBody3);
-        //demo.addVisual(sphereBody3);
-        sphereBody3.position.set(-size,-size,0);
-        
-        var sphereShape4 = new CANNON.Sphere(0.1),
-        sphereBody4 = new CANNON.Body({ mass: 0 });
-        sphereBody4.addShape(sphereShape4);
-        //world.addBody(sphereBody4);
-        //demo.addVisual(sphereBody4);
-        sphereBody4.position.set(-size,size,0);
         
         // Create a box body
         var halfExtents = new CANNON.Vec3(size,size,size*0.3),
@@ -265,35 +190,6 @@ demo.addScene("b5m2turnright",function(){
         demo.addVisual(motor4);
         var c = new CANNON.LockConstraint(motor4, boxBody);
         world.addConstraint(c);
-
-        var spring = new CANNON.Spring(boxBody,sphereBody,{
-            localAnchorA: new CANNON.Vec3(size,-size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
-        var spring2 = new CANNON.Spring(boxBody,sphereBody2,{
-            localAnchorA: new CANNON.Vec3(size,size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
-        var spring3 = new CANNON.Spring(boxBody,sphereBody3,{
-            localAnchorA: new CANNON.Vec3(-size,-size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
-        var spring4 = new CANNON.Spring(boxBody,sphereBody4,{
-            localAnchorA: new CANNON.Vec3(-size,size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
         // Compute the force after each step
         world.addEventListener("postStep",function(event){
             //spring.applyForce();
@@ -305,9 +201,7 @@ demo.addScene("b5m2turnright",function(){
             motor2.torque=new CANNON.Vec3(0,0,-2.5);
             motor3.torque=new CANNON.Vec3(0,0,-2.5);
             motor4.torque=new CANNON.Vec3(0,0,-2.5);
-            //spring2.applyForce();
-            //spring3.applyForce();
-            //spring4.applyForce();
+
         });
     });
  demo.addScene("box2motor5right",function(){
@@ -322,34 +216,6 @@ demo.addScene("b5m2turnright",function(){
 		ground.position.z = -3;
 		world.add(ground);
 		demo.addVisual(ground);
-        // Create a static sphere
-        var sphereShape = new CANNON.Sphere(0.1),
-            sphereBody = new CANNON.Body({ mass: 0 });
-        sphereBody.addShape(sphereShape);
-        //world.addBody(sphereBody);
-        //demo.addVisual(sphereBody);
-        sphereBody.position.set(size,-size,0);
-       
-        var sphereShape2 = new CANNON.Sphere(0.1),
-        sphereBody2 = new CANNON.Body({ mass: 0 });
-        sphereBody2.addShape(sphereShape2);
-        //world.addBody(sphereBody2);
-        //demo.addVisual(sphereBody2);
-        sphereBody2.position.set(size,size,0);
-        
-        var sphereShape3 = new CANNON.Sphere(0.1),
-        sphereBody3 = new CANNON.Body({ mass: 0 });
-        sphereBody3.addShape(sphereShape3);
-        //world.addBody(sphereBody3);
-        //demo.addVisual(sphereBody3);
-        sphereBody3.position.set(-size,-size,0);
-        
-        var sphereShape4 = new CANNON.Sphere(0.1),
-        sphereBody4 = new CANNON.Body({ mass: 0 });
-        sphereBody4.addShape(sphereShape4);
-        //world.addBody(sphereBody4);
-        //demo.addVisual(sphereBody4);
-        sphereBody4.position.set(-size,size,0);
         
         // Create a box body
         var halfExtents = new CANNON.Vec3(size,size,size*0.3),
@@ -409,34 +275,6 @@ demo.addScene("b5m2turnright",function(){
         var c = new CANNON.LockConstraint(motor4, boxBody);
         world.addConstraint(c);
 
-        var spring = new CANNON.Spring(boxBody,sphereBody,{
-            localAnchorA: new CANNON.Vec3(size,-size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
-        var spring2 = new CANNON.Spring(boxBody,sphereBody2,{
-            localAnchorA: new CANNON.Vec3(size,size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
-        var spring3 = new CANNON.Spring(boxBody,sphereBody3,{
-            localAnchorA: new CANNON.Vec3(-size,-size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
-        var spring4 = new CANNON.Spring(boxBody,sphereBody4,{
-            localAnchorA: new CANNON.Vec3(-size,size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
         // Compute the force after each step
         world.addEventListener("postStep",function(event){
             //spring.applyForce();
@@ -448,9 +286,6 @@ demo.addScene("b5m2turnright",function(){
             motor2.torque=new CANNON.Vec3(0,0,-2.5);
             motor3.torque=new CANNON.Vec3(0,0,-2.5);
             motor4.torque=new CANNON.Vec3(0,0,-2.5);
-            //spring2.applyForce();
-            //spring3.applyForce();
-            //spring4.applyForce();
         });
     });
 	demo.addScene("box2motor5left",function(){
@@ -466,33 +301,6 @@ demo.addScene("b5m2turnright",function(){
 		world.add(ground);
 		demo.addVisual(ground);
         // Create a static sphere
-        var sphereShape = new CANNON.Sphere(0.1),
-            sphereBody = new CANNON.Body({ mass: 0 });
-        sphereBody.addShape(sphereShape);
-        //world.addBody(sphereBody);
-        //demo.addVisual(sphereBody);
-        sphereBody.position.set(size,-size,0);
-       
-        var sphereShape2 = new CANNON.Sphere(0.1),
-        sphereBody2 = new CANNON.Body({ mass: 0 });
-        sphereBody2.addShape(sphereShape2);
-        //world.addBody(sphereBody2);
-        //demo.addVisual(sphereBody2);
-        sphereBody2.position.set(size,size,0);
-        
-        var sphereShape3 = new CANNON.Sphere(0.1),
-        sphereBody3 = new CANNON.Body({ mass: 0 });
-        sphereBody3.addShape(sphereShape3);
-        //world.addBody(sphereBody3);
-        //demo.addVisual(sphereBody3);
-        sphereBody3.position.set(-size,-size,0);
-        
-        var sphereShape4 = new CANNON.Sphere(0.1),
-        sphereBody4 = new CANNON.Body({ mass: 0 });
-        sphereBody4.addShape(sphereShape4);
-        //world.addBody(sphereBody4);
-        //demo.addVisual(sphereBody4);
-        sphereBody4.position.set(-size,size,0);
         
         // Create a box body
         var halfExtents = new CANNON.Vec3(size,size,size*0.3),
@@ -551,35 +359,6 @@ demo.addScene("b5m2turnright",function(){
         demo.addVisual(motor4);
         var c = new CANNON.LockConstraint(motor4, boxBody);
         world.addConstraint(c);
-
-        var spring = new CANNON.Spring(boxBody,sphereBody,{
-            localAnchorA: new CANNON.Vec3(size,-size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
-        var spring2 = new CANNON.Spring(boxBody,sphereBody2,{
-            localAnchorA: new CANNON.Vec3(size,size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
-        var spring3 = new CANNON.Spring(boxBody,sphereBody3,{
-            localAnchorA: new CANNON.Vec3(-size,-size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
-        var spring4 = new CANNON.Spring(boxBody,sphereBody4,{
-            localAnchorA: new CANNON.Vec3(-size,size,0),
-            localAnchorB: new CANNON.Vec3(0,0,0),
-            restLength : 2,
-            stiffness : 50,
-            damping : 1,
-        });
         // Compute the force after each step
         world.addEventListener("postStep",function(event){
             //spring.applyForce();
@@ -591,9 +370,7 @@ demo.addScene("b5m2turnright",function(){
             motor2.torque=new CANNON.Vec3(0,0,2.5);
             motor3.torque=new CANNON.Vec3(0,0,2.5);
             motor4.torque=new CANNON.Vec3(0,0,2.5);
-            //spring2.applyForce();
-            //spring3.applyForce();
-            //spring4.applyForce();
+
         });
     });
     demo.start();
