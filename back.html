@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html>
   <head>
     <title>cannon.js - spring demo</title>
@@ -19,8 +19,8 @@
 
     var demo = new CANNON.Demo();
     var size = 1;
-    var f=0;
- demo.addScene("b5m2turnleft",function(){
+
+demo.addScene("b5m2turnright",function(){
 
         // Create world
         var world = demo.getWorld();
@@ -35,14 +35,13 @@
         world.add(ground);
         demo.addVisual(ground);
         
-        
         // Create a box body
         var halfExtents = new CANNON.Vec3(size,size,size*0.3),
             boxShape = new CANNON.Box(halfExtents);
             boxBody = new CANNON.Body({ mass: 5 });
                     
         boxBody.addShape(boxShape);
-        boxBody.position.set(0,0,0);
+        boxBody.position.set(0,0,-size);
 
         var cylinderShape = new CANNON.Cylinder(size*0.6,size*0.6,size*0.2,20);
 
@@ -93,16 +92,14 @@
         demo.addVisual(motor4);
         var c = new CANNON.LockConstraint(motor4, boxBody);
         world.addConstraint(c);
-        console.log(f);
-   
+
         // Compute the force after each step
         world.addEventListener("postStep",function(event){
             //spring.applyForce();
-            boxBody.force=new CANNON.Vec3(0,0,17.5);
-            boxBody.force=new CANNON.Vec3(0,0,17.5);
-            boxBody.force=new CANNON.Vec3(0,0,17.5);
-            boxBody.force=new CANNON.Vec3(0,0,17.5);
-
+            motor1.force=new CANNON.Vec3(0,0,17.6);
+            motor2.force=new CANNON.Vec3(0,0,17.6);
+            motor3.force=new CANNON.Vec3(0,0,17.6);
+            motor4.force=new CANNON.Vec3(0,0,17.6);
 
 
         });

@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>quadcopter</title>
+    <meta charset="utf-8">
+    <style>
+    #info{
+     position:absolute;
+     top:2%;
+     width:100%;
+     text-align:center;
+     }
+    #text{
+     position:absolute;
+     bottom:2%;
+     width:100%;
+     color: #ffff00;
+     text-align:center;
+     }
+	#text2{
+     position:absolute;
+     bottom:4%;
+     width:100%;
+     color: #ffff00;
+     text-align:center;
+     }
+	#yreftext {
+	  width:2%
+	}
+	#thetaReftext {
+	  width:2%
+	}
+      body {
+        overflow:hidden;
+      }
+    </style>
+
+  </head>
+  <body>
+    <div id="info">
+     <input type=range min=1 max=10 step="0.1" value = 2 id='yref'><input id="yreftext" type="text" value=2>
+	 <input type=range min=-2 max=2  step="0.1" value = 0 id='thetaRef'><input id="thetaReftext" type="text" value=0>
+	</div>
+	<div id="text"></div>
+	<div id="text2"></div>
+    <script src="https://threejs.org/build/three.js"></script>
+	<script src="https://jyunming-chen.github.io/tutsplus/js/KeyboardState.js"></script>
+    <script src="build/cannon.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+     
+    <script>
+    var world, body; 
+	var keyboard = new KeyboardState();
+    var timeStep=1/60;
+    var camera, scene, renderer, clock, airplane;
+ 	var omega, omega2;
+    var yref = 2, thetaRef = 0;
+	var motors = []//, cylinder = [];
+    const SIZE = 1;
+	
+	init();
+    animate();
+    $('#yref').change ( function() {
+        yref = $(this).val();
+        $('#yreftext').val (yref);
+    });
+	$('#thetaRef').change ( function() {
+        thetaRef = $(this).val();
+        $('#thetaReftext').val (thetaRef);
+    });
+function init() {
+    initThree();
+    initCannon();
+}
+function initCannon() {
+      world = new CANNON.World();
+      world.gravity.set(0,-10,0);
+      world.broadphase = new CANNON.NaiveBroadphase();
+      //world.solver.iterations = 10;
+      // Y (threejs) or Z (cannonjs) ?
+            // Create a plane
+      /*     var groundShape = new CANNON.Plane();
+            var groundBody = new CANNON.Body({ mass: 0 });
+            groundBody.addShape(groundShape);
+            groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
+            world.addBody(groundBody);*/
+
+      var boxShape = new CANNON.Box(new CANNON.Vec3(SIZE*0.4, SIZE*0.3, SIZE));
+	  
+      // global var: body 
+	  //var motors = [];
+	        
+      body = new CANNON.Body({ mass: 10 });
+      body.addShape(boxShape);
+	  //body.quaternion.setFromAxisAngle(new CANNON.Vec3(0,0,1),Math.PI/2);
+      body.position.set(0,0,0);
+	  
+     var cylinderShape = new CANNON.Cylinder(SIZE*0.8, SIZE*0.8, SIZE*0.2,50);
+
+		  body.addShape(cylinderShape, new CANNON.Vec3( -SIZE - 0.2, 0,SIZE));
+          body.addShape(cylinderShape, new CANNON.Vec3( -SIZE - 0.2, 0, -SIZE));
+          body.addShape(cylinderShape, new CANNON.Vec3(SIZE + 0.2, 0,-SIZE));
+          body.addShape(cylinderShape, new CANNON.Vec3(SIZE + 0.2, 0, SIZE));
+			world.addBody(body);
+			        //console.log(bodies.length)
+      world.addEventListener("postStep",function(event){  
+
+      });   
+  }
+  function buildScene() {
+/*
+	var ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshBasicMaterial({color:0x66f986}));
+	ground.position.set(0,0,0)
+	ground.rotation.x = -Math.PI / 2
+	scene.add(ground);
+*/
+	scene.add (new THREE.GridHelper (100,100, 'red', 'white'));
+	
+	let tree = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 10, 30), new THREE.MeshNormalMaterial() );
+	let atree;
+	atree = tree.clone();
+	atree.position.set(15, 5, 30);
+	scene.add (atree);
+	
+	atree = tree.clone();
+	atree.position.set(-20, 5, 10);
+	scene.add (atree);
+	atree = tree.clone();
+	atree.position.set(35, 5, -10);
+	scene.add (atree);
+	atree = tree.clone();
+	atree.position.set(-10, 5, -40);
+	scene.add (atree);
+/*
+	// remove houses now
+	
+	let house = new THREE.Mesh(new THREE.BoxGeometry(10, 20, 10), new THREE.MeshNormalMaterial());
+	let ahouse;
+	ahouse = house.clone();
+	ahouse.position.set(0,5,30);
+	scene.add (ahouse);
+	ahouse = house.clone();
+	ahouse.position.set(25,5,-10);
+	scene.add (ahouse);
+*/	
+	scene.add (new THREE.AxisHelper (5));
+  
+  }
+  
+  
+  function initThree() {
+        clock = new THREE.Clock();
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
+        camera.position.z = 10;
+        camera.position.y = 3;
+        scene.add( camera );
+        renderer = new THREE.WebGLRenderer();
+        renderer.setClearColor(0x888888);
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        document.body.appendChild( renderer.domElement );
+        
+        let controls = new THREE.OrbitControls(camera, renderer.domElement); 
+		buildScene();
+	    //////////////////////////////////////////////////////
+        airplane = new THREE.Object3D();
+        scene.add( airplane );
+        let pro = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.2, 0.05), new THREE.MeshBasicMaterial({color:0x555555}));
+		let cylinder = [];
+		
+        for(let i = 0 ; i < 4; i++){
+          cylinder[i] = new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.8,0.2, 50,2,true), 
+               new THREE.MeshBasicMaterial({color:0x0000cc,side:THREE.DoubleSide}))
+          cylinder[i].add(pro.clone());
+  		  airplane.add (cylinder[i]);
+		  //scene.add(cylinder[i])
+        }
+        cylinder[0].position.set (-SIZE - 0.2, 0, SIZE);
+        cylinder[1].position.set (-SIZE - 0.2, 0, -SIZE);
+        cylinder[2].position.set (SIZE + 0.2, 0, -SIZE);
+        cylinder[3].position.set (SIZE + 0.2, 0, SIZE);
+
+        let mesh = new THREE.Mesh( new THREE.BoxGeometry(SIZE*0.8,SIZE*0.6,SIZE*2), new THREE.MeshNormalMaterial( {wireframe: true } ) );  
+        airplane.add(mesh);
+    }
+function hoverServo (dt) {  // pass dt for integral control
+      let yy = body.position.y;
+      let vv = body.velocity.y;
+	 // console.log(vv)
+	  // ES6 template string
+	  // https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format
+	  $('#text').html (`[ ${body.position.x.toFixed(2)}, ${body.position.y.toFixed(2)}, 
+	  ${body.position.z.toFixed(2)} ] `);      
+      let error = yref - yy;
+      if (hoverServo.integral === undefined)
+      	hoverServo.integral = 0;
+      hoverServo.integral += error*dt;
+
+      const KP = 8;
+      const KI = 7;
+      const KD = 6;
+      let omega = KP*error + KI*hoverServo.integral + KD*(-vv);
+      //omega = Math.clamp (omega, 0, 100);
+      //console.log (error.toFixed(1) + ' + ' + omega.toFixed(1))
+      //console.log ("error:"+error.toFixed(1)+" yfer:"+yref+" y:"+yy);
+      return omega;
+    }
+function yawServo (dt) {  // pass dt for integral control
+      //let theta = 2 * Math.acos(body.quaternion.w);
+	    let theta = (body.quaternion.toAxisAngle(0,1,0))[1];
+      let vv = body.angularVelocity.y;
+      let  error=0;
+	    if(thetaRef>0)
+       error = thetaRef - theta;
+       else error=-thetaRef-theta;
+      if (yawServo.integral === undefined)
+      	yawServo.integral = 0;
+      yawServo.integral += error*dt;
+      const KP = 3;
+      const KI = 7;
+      const KD = 6;
+      let omega = KP*error*10 + KI*yawServo.integral + KD*(-vv);
+	    $('#text2').html (`[ ${theta.toFixed(2)}, ${yawServo.integral.toFixed(2)}] `);      
+	  //console.log(omega)
+      //omega = Math.clamp (omega, 0, 100);
+      //console.log (error.toFixed(1) + ' + ' + omega.toFixed(1))
+      //console.log ("error:"+error.toFixed(1)+" yfer:"+yref+" y:"+yy);
+      return omega;
+    }
+    
+     var angle = 0
+function animate() {
+      let dt = clock.getDelta();
+      
+      omega = hoverServo(dt);
+      
+      let KK = 0.1;
+      let f = KK*omega*omega;
+	  //console.log(f, omega)
+     /* body.applyLocalForce (new CANNON.Vec3(0,f,0), new CANNON.Vec3(-1, 0, 1) )
+      body.applyLocalForce (new CANNON.Vec3(0,f,0), new CANNON.Vec3(-1, 0, -1) )
+      body.applyLocalForce (new CANNON.Vec3(0,f,0), new CANNON.Vec3( 1, 0, -1) )
+      body.applyLocalForce (new CANNON.Vec3(0,f,0), new CANNON.Vec3( 1, 0, 1) )	*/
+	  
+    body.force = new CANNON.Vec3(0,4*f,0)
+    // console.log(body.applyLocalForce, motors[1].torque.y, motors[2].torque.y,motors[3].torque.y)
+	  let KT = 0.1;let r=0;
+	  omega2 = yawServo(dt);
+	 // console.log(omega, omega2)
+	  let torque = KT*omega*omega;
+    //let r = KT*omega2*omega2
+	  if(omega2 > 0)  r = KT*omega2*omega2;
+	   else  r = -KT*omega2*omega2;
+	  console.log(r, omega2)
+    if(thetaRef>=0){
+    body.torque.vadd (new CANNON.Vec3(0,-torque + r,0), body.torque);
+	  body.torque.vadd (new CANNON.Vec3(0,torque + r,0), body.torque);
+	  body.torque.vadd (new CANNON.Vec3(0,-torque + r,0), body.torque);
+	  body.torque.vadd (new CANNON.Vec3(0,torque + r,0), body.torque);}
+    else {
+    body.torque.vadd (new CANNON.Vec3(0,-torque - r,0), body.torque);
+    body.torque.vadd (new CANNON.Vec3(0,torque - r,0), body.torque);
+    body.torque.vadd (new CANNON.Vec3(0,-torque - r,0), body.torque);
+    body.torque.vadd (new CANNON.Vec3(0,torque - r,0), body.torque);
+    }
+
+	 /*  motors[0].torque.vadd (new CANNON.Vec3(0,-torque + r,0), motors[0].torque);
+	   motors[1].torque.vadd (new CANNON.Vec3(0,torque + r,0), motors[1].torque);
+	   motors[2].torque.vadd (new CANNON.Vec3(0,-torque + r,0), motors[2].torque);
+	   motors[3].torque.vadd (new CANNON.Vec3(0,torque + r,0), motors[3].torque);*/
+	  /* motors[0].torque=new CANNON.Vec3(0,-torque + r,0)
+	   motors[1].torque=new CANNON.Vec3(0,torque + r,0)
+	   motors[2].torque=new CANNON.Vec3(0,-torque + r,0)
+	   motors[3].torque=new CANNON.Vec3(0,torque + r,0)*/
+	   body.angularDamping = 0.9
+	  requestAnimationFrame( animate );
+	  updatePhysics();
+	  // render propeller in airplane
+	  // doublecheck CW and CCW
+	  airplane.children[0].children[0].rotation.y += omega*dt;
+	  airplane.children[1].children[0].rotation.y -= omega*dt;
+	  airplane.children[2].children[0].rotation.y += omega*dt;
+	  airplane.children[3].children[0].rotation.y -= omega*dt;
+	  renderer.render( scene, camera );
+}
+function updatePhysics() {
+  // Step the physics world
+  world.step(timeStep);
+  
+  // Copy coordinates from Cannon.js to Three.js
+  airplane.position.copy(body.position);
+  airplane.quaternion.copy(body.quaternion);
+  //console.log(body.quaternion)
+   for(i = 0;i < 4;i++){
+           // cylinder[i].position.copy(motors[i].position);
+           // cylinder[i].quaternion.copy(motors[i].quaternion);
+   }
+}
+    </script>
+  </body>
+</html>

@@ -17,9 +17,9 @@
      color: #ffff00;
      text-align:center;
      }
-    #yreftext {
-      width:2%
-    }
+  #yreftext {
+    width:2%
+  }
       body {
         overflow:hidden;
       }
@@ -28,11 +28,11 @@
   </head>
   <body>
     <div id="info">
-     <input type=range min=1 max=4 step="0.1" value = 2 id='yref'><input id="yreftext" type="text" value=2>
-    </div>
-    <div id="text"></div>
+     <input type=range min=1 max=10 step="0.1" value = 2 id='yref'><input id="yreftext" type="text" value=2>
+  </div>
+  <div id="text"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/94/three.min.js"></script>
-    <script src="../build/cannon.js"></script>
+    <script src="build/cannon.js"></script>
     <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
      
@@ -42,10 +42,11 @@
     var camera, scene, renderer, clock, airplane;
     var omega;
     var yref = 2;
-    
+    var motors = [];
+          
     const SIZE = 1;
-    
-    init();
+  
+  init();
     animate();
     $('#yref').change ( function() {
         yref = $(this).val();
@@ -63,8 +64,6 @@ function initCannon() {
       // Y (threejs) or Z (cannonjs) ?
       var boxShape = new CANNON.Box(new CANNON.Vec3(SIZE, SIZE, SIZE*0.3));
       // global var: body 
-      var motors = [];
-            
       body = new CANNON.Body({ mass: 5 });
       body.addShape(boxShape);
       body.position.set(0,0,0);
@@ -112,41 +111,41 @@ function initCannon() {
   }
   function buildScene() {
 /*
-    var ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshBasicMaterial({color:0x66f986}));
-    ground.position.set(0,0,0)
-    ground.rotation.x = -Math.PI / 2
-    scene.add(ground);
+  var ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshBasicMaterial({color:0x66f986}));
+  ground.position.set(0,0,0)
+  ground.rotation.x = -Math.PI / 2
+  scene.add(ground);
 */
-    scene.add (new THREE.GridHelper (100,100, 'red', 'white'));
-    
-    let tree = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 10, 30), new THREE.MeshNormalMaterial() );
-    let atree;
-    atree = tree.clone();
-    atree.position.set(15, 5, 30);
-    scene.add (atree);
-    
-    atree = tree.clone();
-    atree.position.set(-20, 5, 10);
-    scene.add (atree);
-    atree = tree.clone();
-    atree.position.set(35, 5, -10);
-    scene.add (atree);
-    atree = tree.clone();
-    atree.position.set(-10, 5, -40);
-    scene.add (atree);
+  scene.add (new THREE.GridHelper (100,100, 'red', 'white'));
+  
+  let tree = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 10, 30), new THREE.MeshNormalMaterial() );
+  let atree;
+  atree = tree.clone();
+  atree.position.set(15, 5, 30);
+  scene.add (atree);
+  
+  atree = tree.clone();
+  atree.position.set(-20, 5, 10);
+  scene.add (atree);
+  atree = tree.clone();
+  atree.position.set(35, 5, -10);
+  scene.add (atree);
+  atree = tree.clone();
+  atree.position.set(-10, 5, -40);
+  scene.add (atree);
 /*
-    // remove houses now
-    
-    let house = new THREE.Mesh(new THREE.BoxGeometry(10, 20, 10), new THREE.MeshNormalMaterial());
-    let ahouse;
-    ahouse = house.clone();
-    ahouse.position.set(0,5,30);
-    scene.add (ahouse);
-    ahouse = house.clone();
-    ahouse.position.set(25,5,-10);
-    scene.add (ahouse);
+  // remove houses now
+  
+  let house = new THREE.Mesh(new THREE.BoxGeometry(10, 20, 10), new THREE.MeshNormalMaterial());
+  let ahouse;
+  ahouse = house.clone();
+  ahouse.position.set(0,5,30);
+  scene.add (ahouse);
+  ahouse = house.clone();
+  ahouse.position.set(25,5,-10);
+  scene.add (ahouse);
 */  
-    scene.add (new THREE.AxisHelper (5));
+  scene.add (new THREE.AxisHelper (5));
   
   }
   
@@ -164,18 +163,18 @@ function initCannon() {
         document.body.appendChild( renderer.domElement );
         
         let controls = new THREE.OrbitControls(camera, renderer.domElement); 
-        buildScene();
-        //////////////////////////////////////////////////////
+    buildScene();
+      //////////////////////////////////////////////////////
         airplane = new THREE.Object3D();
         scene.add( airplane );
         let pro = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.2, 0.05), new THREE.MeshBasicMaterial({color:0x555555}));
-        let cylinder = [];
-        
+    let cylinder = [];
+    
         for(let i = 0 ; i < 4; i++){
           cylinder[i] = new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.8,0.2, 50,2,true), 
                new THREE.MeshBasicMaterial({color:0x0000cc,side:THREE.DoubleSide}))
           cylinder[i].add(pro.clone());
-          airplane.add (cylinder[i]);
+        airplane.add (cylinder[i]);
         }
         cylinder[0].position.set (-SIZE, 0.5, SIZE);
         cylinder[1].position.set (-SIZE, 0.5, -SIZE);
@@ -187,17 +186,17 @@ function initCannon() {
 function hoverServo (dt) {  // pass dt for integral control
       let yy = body.position.y;
       let vv = body.velocity.y;
-      // ES6 template string
-      // https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format
-      $('#text').html (`[ ${body.position.x.toFixed(2)}, ${body.position.y.toFixed(2)}, 
-      ${body.position.z.toFixed(2)} ] `);      
+    // ES6 template string
+    // https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format
+    $('#text').html (`[ ${body.position.x.toFixed(2)}, ${body.position.y.toFixed(2)}, 
+    ${body.position.z.toFixed(2)} ] `);      
       let error = yref - yy;
       if (hoverServo.integral === undefined)
         hoverServo.integral = 0;
       hoverServo.integral += error*dt;
-      const KP = 5;
-      const KI = 18;
-      const KD = 22;
+      const KP = 8;
+      const KI = 7;
+      const KD = 7;
       let omega = KP*error + KI*hoverServo.integral + KD*(-vv);
       //omega = Math.clamp (omega, 0, 100);
       //console.log (error.toFixed(1) + ' + ' + omega.toFixed(1))
@@ -213,26 +212,30 @@ function animate() {
       
       let KK = 0.1;
       let f = KK*omega*omega;
-      body.applyLocalForce (new CANNON.Vec3(0,f,0), new CANNON.Vec3(-SIZE, 0.5, SIZE) )
+     /* body.applyLocalForce (new CANNON.Vec3(0,f,0), new CANNON.Vec3(-SIZE, 0.5, SIZE) )
       body.applyLocalForce (new CANNON.Vec3(0,f,0), new CANNON.Vec3(-SIZE, 0.5, -SIZE) )
       body.applyLocalForce (new CANNON.Vec3(0,f,0), new CANNON.Vec3( SIZE, 0.5, -SIZE) )
-      body.applyLocalForce (new CANNON.Vec3(0,f,0), new CANNON.Vec3( SIZE, 0.5, SIZE) )
-      let KT = 0.1;
-      let torque = KT*omega*omega;
-      body.torque.vadd (new CANNON.Vec3(0,torque,0));
-      body.torque.vadd (new CANNON.Vec3(0,torque,0));
-      body.torque.vadd (new CANNON.Vec3(0,-torque,0));
-      body.torque.vadd (new CANNON.Vec3(0,-torque,0));
-            
-      requestAnimationFrame( animate );
-      updatePhysics();
-      // render propeller in airplane
-      // doublecheck CW and CCW
-      airplane.children[0].children[0].rotation.y += omega*dt;
-      airplane.children[1].children[0].rotation.y += omega*dt;
-      airplane.children[2].children[0].rotation.y -= omega*dt;
-      airplane.children[3].children[0].rotation.y -= omega*dt;
-      renderer.render( scene, camera );
+      body.applyLocalForce (new CANNON.Vec3(0,f,0), new CANNON.Vec3( SIZE, 0.5, SIZE) )*/
+    motors[0].force = new CANNON.Vec3(0,f,0);
+    motors[1].force = new CANNON.Vec3(0,f,0);
+    motors[2].force = new CANNON.Vec3(0,f,0);
+    motors[3].force = new CANNON.Vec3(0,f,0);
+    let KT = 0.1;
+    let torque = KT*omega*omega;
+    body.torque.vadd (new CANNON.Vec3(0,torque,0));
+    body.torque.vadd (new CANNON.Vec3(0,torque,0));
+    body.torque.vadd (new CANNON.Vec3(0,-torque,0));
+    body.torque.vadd (new CANNON.Vec3(0,-torque,0));
+          
+    requestAnimationFrame( animate );
+    updatePhysics();
+    // render propeller in airplane
+    // doublecheck CW and CCW
+    airplane.children[0].children[0].rotation.y += omega*dt;
+    airplane.children[1].children[0].rotation.y += omega*dt;
+    airplane.children[2].children[0].rotation.y -= omega*dt;
+    airplane.children[3].children[0].rotation.y -= omega*dt;
+    renderer.render( scene, camera );
 }
 function updatePhysics() {
   // Step the physics world
