@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>three.js / cannon.js example</title>
+    <meta charset="utf-8">
+    <style>
+      * {
+        margin:0;
+        padding:0
+      }
+
+      body {
+        overflow:hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://threejs.org/build/three.js"></script>
+    <script src="build/cannon.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script>
+
+      var pendium,box,boxBody,motor;
+     var   camera, scene, renderer, geometry, material, mesh,world,cylinder;
+      initThree();
+      initCannon();
+      animate();
+      var size=1;
+
+      function initCannon() {
+
+         world = new CANNON.World();
+        world.gravity.set(0,0,0);
+        world.broadphase = new CANNON.NaiveBroadphase();
+        
+        
+        
+        // Create a box body
+        var halfExtents = new CANNON.Vec3(size,size,size*0.1),
+            boxShape = new CANNON.Box(halfExtents);
+            boxBody = new CANNON.Body({ mass: 5 });
+            boxBody.addShape(boxShape);
+            //boxBody.position.set(0,0,2)
+        var zero = new CANNON.Vec3();
+        var constraints = [];
+
+        var cylinderShape = new CANNON.Cylinder(size*0.2,size*0.2,size*2,90);
+        
+        motor = new CANNON.Body({ mass: 1 });
+        
+        motor.addShape(cylinderShape);
+        //cylinder.position.set( size*0.5, size*0.5, -size*0.3);
+        var Axis =  new CANNON.Vec3(0,1,0);
+        
+        constraints.push(new CANNON.HingeConstraint(boxBody, motor,  { pivotA: new CANNON.Vec3( 0,0, size*-1.1), axisA: Axis,  pivotB: zero, axisB: Axis }));
+         
+          for(var i=0; i<constraints.length; i++)
+          world.addConstraint(constraints[i]);
+          
+          var bodies = [boxBody,motor];
+            
+            for(var i=0; i<bodies.length; i++){
+                world.add(bodies[i]);
+      }
+}
+
+      function initThree() {
+
+          scene = new THREE.Scene();
+
+          camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
+          camera.position.z = 10;
+          camera.position.y = 3;
+          scene.add( camera );
+         
+          
+          var plane = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshBasicMaterial({color:0x888888}));
+          plane.position.set(0,0,0)
+          scene.add(plane)
+          plane.rotation.x = Math.PI / 2
+          pendium = new THREE.Object3D();
+
+          geometry = new THREE.BoxGeometry(1, 0.1, 1);
+          material = new THREE.MeshBasicMaterial( { color: 0xff0000, wireframe: true } );
+
+          mesh = new THREE.Mesh( geometry, material );
+          scene.add( pendium );
+          pendium.add(mesh);
+
+           cylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,2 ,10),material)
+            pendium.add(cylinder);
+          //cylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.8,0.8,0.2, 80))
+          //scene.add(cylinder);
+          //cylinder.position.set(5, 0, 0)
+          
+          cylinder.position.set(0, -2.2,0)
+          //airplane.rotation.x = Math.PI / 2;
+            renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(0x888888);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+             let controls = new THREE.OrbitControls(camera, renderer.domElement);
+          //let controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+      }
+
+      function animate() {
+
+          requestAnimationFrame( animate );
+          updatePhysics();
+          render();
+
+      }
+
+      function updatePhysics() {
+
+          // Step the physics world
+           var timeStep = 1 / 60;
+          world.step(timeStep);
+
+          // Copy coordinates from Cannon.js to Three.js
+
+          cylinder.position.copy(motor.position)
+          cylinder.quaternion.copy(motor.quaternion)
+          pendium.position.copy(boxBody.position);
+          pendium.quaternion.copy(boxBody.quaternion);
+
+      }
+
+      function render() {
+
+          renderer.render( scene, camera );
+
+      }
+
+    </script>
+  </body>
+</html>
