@@ -61,34 +61,40 @@ class PIDControllerR2 {
     this.y = y;
     this.xref = xref;
     this.yref = yref;
-    this.vx = 0;
-    this.vy = 0;
-    this.KP = 150; // 'spring constant'
+    this.lastErrorX = 0;
+    this.lastErrorY = 0;
+    this.KP = 25; // 'spring constant'
     this.KD = 20; // 'damping'
-    this.KI = 20;
-	  this.integralX = 0;
+    this.KI = 0;
+    this.integralX = 0;
     this.integralY = 0;
   }
 
-  update(dt) {
+  controlLaw(dt) {
     let errorX = this.xref - this.x;
     let errorY = this.yref - this.y;
-		this.integralX += errorX*dt;
-		this.integralY += errorY*dt;
-		let fx = this.KP * errorX + this.KI*this.integralX - this.KD * this.vx;
-    let fy = this.KP * errorY + this.KI*this.integralY - this.KD * this.vy;
-    // plant: Euler's method (Newtonian dynamics)
-    this.vx += fx * dt;
-    this.x += this.vx * dt
-    this.vy += fy * dt;
-    this.y += this.vy * dt
-    return [this.x, this.y]
+    this.integralX += errorX*dt;
+    this.integralY += errorY*dt;
+    let diffX = (errorX - this.lastErrorX)/dt;
+    let diffY = (errorY - this.lastErrorY)/dt;
+    this.lastErrorX = errorX;
+    this.lastErrorY = errorY;
+    let fx = this.KP * errorX + this.KI*this.integralX + this.KD*diffX;
+    let fy = this.KP * errorY + this.KI*this.integralY + this.KD*diffY;
+    return [fx, fy];    
+  }
+
+  setCurrent(x,y) {
+    this.x = x;
+    this.y = y;
   }
   setRef(xref, yref) {
     this.xref = xref;
     this.yref = yref;
   }
 }
+
+
   $('#view1').click(function() {
         useGyro= !useGyro;
     });
@@ -101,6 +107,9 @@ var omegaGain = 1.0;
 var omegaHover;
 const PROP_KK = 0.1;
 var useGyro=false;
+var r2Control;
+var theta = 0, omega = 0;
+
 // flight maneuver
 // hovering
 var yref = 2;   
@@ -218,6 +227,7 @@ function initThree() {
 	let mesh = new THREE.Mesh( new THREE.BoxGeometry(SIZE*0.8,SIZE*0.6,SIZE*2), new THREE.MeshNormalMaterial( {wireframe: true } ) );  
 	airplane.add (new THREE.AxesHelper(5));
 	airplane.add(mesh);
+	r2Control = new PIDControllerR2();
 }
 
 function hoverServo (dt) {  // pass dt for integral control
@@ -300,6 +310,22 @@ function yawServo (dt) {  // pass dt for integral control
 	return r;
 }
 
+function controlLaw (dt) {
+
+  //let error = thetaRef - theta;
+  
+  let forces = r2Control.controlLaw (dt);
+  let u = forces[1]*Math.cos(theta) - forces[0]*Math.sin(theta);
+  console.log (u.toFixed(2))
+  return u;
+/*
+  const Kp = 20;
+  let Kd = 10;
+  console.log (error)
+  let u = Kp*error - Kd*omega;
+  return u;
+*/
+}
 
 function animate() {
   let dt = clock.getDelta();
@@ -325,6 +351,17 @@ function animate() {
   	rYaw = Math.clamp (rYaw, -omega, omega);
   }  
   */
+
+   if (! turning) {
+   let dt = 0.01;
+  let u = controlLaw (dt);
+  const I = 1;
+  let alpha = u/I;
+  omega += alpha*dt;
+  theta += omega*dt;
+  r2Control.setCurrent (Math.cos(theta), Math.sin(theta));
+
+  } 
   if (! rolling) {
   	rRoll = rollServo (dt);
   	rRoll = Math.clamp (rRoll, -omega*0.15, omega*0.15);
@@ -458,8 +495,8 @@ function handleKeys () {
 		
 		// set up stopping reference
 		yawRef = getBodyYaw();
-	    console.log ('set thetaRef: ' + (yawRef/Math.PI*180).toFixed(2));
-	    //pidR2.setRef (Math.cos(yawRef), Math.sin(yawRef));						
+	    //console.log ('set thetaRef: ' + (yawRef/Math.PI*180).toFixed(2));
+	   r2Control.setRef (1*Math.cos(thetaRef), 1*Math.sin(thetaRef));						
 	}
 
 	if (keyboard.pressed('right')) {
@@ -473,7 +510,7 @@ function handleKeys () {
 		turning = false;
 		// set up stopping reference
 		yawRef = getBodyYaw();
-	    console.log ('set thetaRef: ' + (yawRef/Math.PI*180).toFixed(2));
+	    r2Control.setRef (1*Math.cos(thetaRef), 1*Math.sin(thetaRef));		
 	}
 
     $('#gain').val (omegaGain);
