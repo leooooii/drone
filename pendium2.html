@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>quadcopter</title>
+    <meta charset="utf-8">
+    <style>
+    #info{
+     position:absolute;
+     top:2%;
+     width:100%;
+     text-align:center;
+     }
+    #text{
+     position:absolute;
+     bottom:2%;
+     width:100%;
+     text-align:center;
+     }
+      body {
+        overflow:hidden;
+      }
+    </style>
+
+  </head>
+  <body>
+    <div id="info">
+     <input type=range min=-2 max=2 step="0.5" value = 1 id='yref'>
+     <font id='texts'style="font-family:verdana;margin-left: 10px;" face="monospace" SIZE='4' color='Black'>yref</font>
+  </div>
+  <div id="text"></div>
+    <!--script src="../libs/Three.js"></script-->
+    <script src="https://threejs.org/build/three.js"></script>
+    <script src="build/cannon.js"></script>
+    <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://jyunming-chen.github.io/tutsplus/js/KeyboardState.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+     
+    <script>
+	var world, body, motors = [];; 
+	var timeStep=1/60;
+	var camera, scene, renderer, clock, airplane, mesh;
+	var omega,omega2;
+	var yref = 1, xref=1;;
+	var move = true;
+	const SIZE = 1;
+  
+	init();
+	animate();
+
+	$('#yref').change ( function() {
+		yref = $(this).val();
+		$('#yreftext').val (yref);
+	});
+
+function init() {
+    initThree();
+    initCannon();
+}
+function initCannon() {
+	world = new CANNON.World();
+	world.gravity.set(0,-10,0);
+	world.broadphase = new CANNON.NaiveBroadphase();
+	world.solver.iterations = 10; 
+	var groundShape = new CANNON.Plane();
+	var groundBody = new CANNON.Body({ mass: 0 });
+	groundBody.addShape(groundShape);
+	groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
+	world.addBody(groundBody);	
+    // Create a box body
+	var boxShape = new CANNON.Box(new CANNON.Vec3(SIZE, SIZE*0.1, SIZE*0.4));
+
+	body = new CANNON.Body({ mass: 1 });
+	body.addShape(boxShape);
+	body.position.set(0,5,0);
+
+	var cylinderShape = new CANNON.Cylinder(SIZE*0.2,SIZE*0.2,SIZE*2,80);
+	var quat = new CANNON.Quaternion();
+	quat.setFromAxisAngle(new CANNON.Vec3(1,0,0),-Math.PI/2);
+	var translation = new CANNON.Vec3(0,0,0);
+	cylinderShape.transformAllPoints(translation,quat);
+	
+	// Constrain motor
+	var constraints = [];
+	var zero = new CANNON.Vec3();
+	
+	// Hinge the motor
+	motor = new CANNON.Body({
+	mass: 0.1,
+	shape: cylinderShape,
+	position: new CANNON.Vec3(0, 5-1.1, 0)
+	});
+
+	//motor.quaternion.setFromAxisAngle(new CANNON.Vec3(0,0,0),Math.PI/2);
+	constraints.push(new CANNON.HingeConstraint(body, motor,  { 
+		pivotA: new CANNON.Vec3(0, -1.1, 0), axisA: new CANNON.Vec3(0,1,0),  
+		pivotB: zero, axisB: new CANNON.Vec3(0,1,0) })
+	);
+	
+	for(var i=0; i<constraints.length; i++)
+		world.addConstraint(constraints[i]);
+	var bodies = [body, motor];
+	for(var i=0; i<bodies.length; i++){
+		world.addBody(bodies[i]);
+	}
+	world.addEventListener("postStep",function(event){  
+	});   
+  }
+  
+function buildScene() {
+	scene.add (new THREE.GridHelper (100,100, 'red', 'white'));
+	scene.add (new THREE.AxisHelper (5));
+}
+  
+function initThree() {
+	clock = new THREE.Clock();
+	scene = new THREE.Scene();
+	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
+	camera.position.z = 10;
+	camera.position.y = 3;
+	scene.add( camera );
+	renderer = new THREE.WebGLRenderer();
+	renderer.setClearColor(0x888888);
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	document.body.appendChild( renderer.domElement );
+
+	let controls = new THREE.OrbitControls(camera, renderer.domElement); 
+	buildScene();
+	
+	//////////////////////////////////////////////////////
+	cylinder = new THREE.Mesh(new THREE.CylinderGeometry(SIZE*0.2, SIZE*0.2, SIZE*2,80))
+	scene.add(cylinder)
+	mesh = new THREE.Mesh( new THREE.BoxGeometry(SIZE*2,SIZE*0.2,SIZE*0.8), new THREE.MeshNormalMaterial( {wireframe: true } ) );  
+	scene.add(mesh);
+}
+
+
+function rollServo (dt) {  // pass dt for integral control
+	let xx = body.position.x;
+	let vv = body.velocity.x;
+	// ES6 template string
+	// https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format
+	$('#text').html (`[ ${body.position.x.toFixed(2)}, ${body.position.y.toFixed(2)}, 
+	${body.position.z.toFixed(2)} ] `);      
+	
+	let error = xref - xx;
+	if (hoverServo.integral === undefined)
+	hoverServo.integral = 0;
+	hoverServo.integral += error*dt;
+	const KP = 5;
+	const KI = 8;
+	const KD = 6;
+	let omega = KP*error + KI*hoverServo.integral + KD*(-vv);
+	//omega = Math.clamp (omega, 0, 100);
+	//console.log (error.toFixed(1) + ' + ' + omega.toFixed(1))
+	//console.log ("error:"+error.toFixed(1)+" yfer:"+yref+" y:"+yy);
+	return omega;
+}
+   function hoverServo (dt) {  // pass dt for integral control
+	let yy = body.position.y;
+	let vv = body.velocity.y;
+	// ES6 template string
+	// https://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format
+ 	
+	let error = yref - yy;
+	if (hoverServo.integral === undefined)
+	hoverServo.integral = 0;
+	hoverServo.integral += error*dt;
+	const KP = 5;
+	const KI = 8;
+	const KD = 6;
+	let omega = KP*error + KI*hoverServo.integral + KD*(-vv);
+	//omega = Math.clamp (omega, 0, 100);
+	//console.log (error.toFixed(1) + ' + ' + omega.toFixed(1))
+	//console.log ("error:"+error.toFixed(1)+" yfer:"+yref+" y:"+yy);
+	return omega;
+}
+     
+function animate() {
+
+	 let dt = clock.getDelta();
+      omega = hoverServo(dt);
+      omega2= rollServo(dt);
+      let KK = 0.1;
+      let f = KK*omega*omega;
+      let f2=KK*omega2*omega2;
+      body.applyLocalForce (new CANNON.Vec3(f2,0,0), new CANNON.Vec3(0, 0, 0) )
+      //body.applyLocalForce (new CANNON.Vec3(0,f,0), new CANNON.Vec3(0, 0, 0) )
+      console.log("xref"+yref);
+      console.log(f);
+      body.applyLocalForce (new CANNON.Vec3(0,11,0), new CANNON.Vec3(0, 0, 0) )
+    requestAnimationFrame( animate );
+    updatePhysics();
+    renderer.render( scene, camera );
+	
+}
+function updatePhysics() {
+  // Step the physics world
+  world.step(timeStep);
+ 
+  // Copy coordinates from Cannon.js to Three.js
+  mesh.position.copy(body.position);
+  mesh.quaternion.copy(body.quaternion);
+  //cylinder.rotation.z = Math.PI / 2
+  cylinder.position.copy(motor.position);
+  cylinder.quaternion.copy(motor.quaternion);
+
+}
+    </script>
+  </body>
+</html>
