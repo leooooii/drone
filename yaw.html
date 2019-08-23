@@ -56,34 +56,39 @@ class PIDControllerR2 {
     this.y = y;
     this.xref = xref;
     this.yref = yref;
-    this.vx = 0;
-    this.vy = 0;
-    this.KP = 150; // 'spring constant'
+    this.lastErrorX = 0;
+    this.lastErrorY = 0;
+    this.KP = 25; // 'spring constant'
     this.KD = 20; // 'damping'
-     this.KI = 0;
-	  this.integralX = 0;
+    this.KI = 0;
+    this.integralX = 0;
     this.integralY = 0;
-}
+  }
 
-  update(dt) {
+  controlLaw(dt) {
     let errorX = this.xref - this.x;
     let errorY = this.yref - this.y;
-		this.integralX += errorX*dt;
-		this.integralY += errorY*dt;
-		let fx = this.KP * errorX - this.KD * this.vx;
-    let fy = this.KP * errorY - this.KD * this.vy;
-    // plant: Euler's method (Newtonian dynamics)
-    this.vx += fx * dt;
-    this.x += this.vx * dt
-    this.vy += fy * dt;
-    this.y += this.vy * dt
-    return [this.x, this.y]
+    this.integralX += errorX*dt;
+    this.integralY += errorY*dt;
+    let diffX = (errorX - this.lastErrorX)/dt;
+    let diffY = (errorY - this.lastErrorY)/dt;
+    this.lastErrorX = errorX;
+    this.lastErrorY = errorY;
+    let fx = this.KP * errorX + this.KI*this.integralX + this.KD*diffX;
+    let fy = this.KP * errorY + this.KI*this.integralY + this.KD*diffY;
+    return [fx, fy];    
+  }
+
+  setCurrent(x,y) {
+    this.x = x;
+    this.y = y;
   }
   setRef(xref, yref) {
     this.xref = xref;
     this.yref = yref;
   }
 }
+
 
     var world, body; 
     var camera, scene, renderer, clock, keyboard, airplane;
@@ -97,7 +102,9 @@ class PIDControllerR2 {
 	var yawAngle = 0, yawRef = 0;
 	var pidR2;
 	var turning = false;
-	
+	var r2Control;
+  var theta = 0, omega = 0;
+
 	init();
     animate();
 
@@ -199,6 +206,7 @@ function buildScene() {
         airplane.add (new THREE.AxesHelper(5));
         airplane.add(mesh);
         pdControl = new PIDControllerR2();
+        r2Control = new PIDControllerR2();
     }
 
 function hoverServo (dt) {  // pass dt for integral control
@@ -239,7 +247,22 @@ function yawServo (dt) {  // pass dt for integral control
       return r;
 }
 
+function controlLaw (dt) {
 
+  //let error = thetaRef - theta;
+  
+  let forces = r2Control.controlLaw (dt);
+  let u = forces[1]*Math.cos(theta) - forces[0]*Math.sin(theta);
+  console.log (u.toFixed(2))
+  return u;
+/*
+  const Kp = 20;
+  let Kd = 10;
+  console.log (error)
+  let u = Kp*error - Kd*omega;
+  return u;
+*/
+}
 function animate() {
   let dt = clock.getDelta();
 
@@ -255,18 +278,29 @@ function animate() {
   // when do we need to call yawServo??
   if (! turning) {
   	//r = yawServo (dt);
-   let pos = pdControl.update (dt);
+   /*let pos = pdControl.update (dt);
     r = Math.atan2(pos[1],pos[0])
     
      console.log("pid:"+r);
-     r = Math.clamp (r, -omega, omega);
-  }  
+     r = Math.clamp (r, -omega, omega);*/
+   let dt = 0.01;
+  //theta = pdControl.update(0.01);
+  
+  let u = controlLaw (dt);
+  const I = 1;
+  let alpha = u/I;
+  omega += alpha*dt;
+  theta += omega*dt;
+  r2Control.setCurrent (Math.cos(theta), Math.sin(theta));
+
+  } 
+
   omega0 = omega2 = omega - r;
   omega1 = omega3 = omega + r;
 //console.log ('r:' + r);
 
   body.torque = new CANNON.Vec3(0,0,0);
-  body.angularDamping = 0.9
+  body.angularDamping = 0.35
 
   body.applyLocalForce (new CANNON.Vec3(0,PROP_KK*omega0*omega0,0), new CANNON.Vec3(-1.2*SIZE, 0, SIZE) )
   body.applyLocalForce (new CANNON.Vec3(0,PROP_KK*omega1*omega1,0), new CANNON.Vec3(-1.2*SIZE, 0, -SIZE) )
@@ -335,8 +369,9 @@ function handleKeys () {
 		// set up stopping reference
 		yawRef = getBodyYaw();
 	    console.log ('set thetaRef: ' + (yawRef/Math.PI*180).toFixed(2));
-	    pidR2.setRef (Math.cos(yawRef), Math.sin(yawRef));						
-	}
+	    r2Control.setRef (1*Math.cos(thetaRef), 1*Math.sin(thetaRef));					
+	
+  }
 
 	if (keyboard.pressed('right')) {
 		$('#ccwTurn').css ("background-color",  'yellow');
@@ -349,9 +384,10 @@ function handleKeys () {
 		turning = false;
 		// set up stopping reference
 		yawRef = getBodyYaw();
-    pidR2.setRef (Math.cos(yawRef), Math.sin(yawRef));
-	    console.log ('set thetaRef: ' + (yawRef/Math.PI*180).toFixed(2));
-	}
+    r2Control.setRef (1*Math.cos(thetaRef), 1*Math.sin(thetaRef));
+	   console.log ('set thetaRef: ' + (yawRef/Math.PI*180).toFixed(2));
+	 
+  }
 
     $('#gain').val (omegaGain);
 	  $('#yreftext').val (yref.toFixed(2));
